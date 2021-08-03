@@ -56,20 +56,30 @@ __global__ void rw_kernel(	unsigned int numAllNodes,
 
 			atomicAdd(&numWalker2[end], 1);
 		}
-
-		numWalker1[id] = 0;
 	}
 }
 
+/*
 __global__ void moveWalkers(unsigned int * activeNodes, int *numWalker1, int *numWalker2, float *value, unsigned int size, unsigned int from)
 {
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
 	unsigned int nID;
 	if(id < size){
 		nID = activeNodes[id+from];
-		numWalker1[nID] += numWalker2[nID];
+		numWalker1[nID] = numWalker2[nID];
 		value[nID] += (numWalker2[nID] + 0.0) / 10.0;
 		numWalker2[nID] = 0;
+	}
+}
+*/
+
+__global__ void moveWalkers(unsigned int num_nodes, int *numWalker1, int *numWalker2, float *value)
+{
+	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
+	if (id < num_nodes) {
+		numWalker1[id] = numWalker2[id];
+		value[id] += (numWalker2[id] + 0.0) / 10.0;
+		numWalker2[id] = 0;
 	}
 }
 
@@ -124,15 +134,13 @@ int main(int argc, char** argv)
 	uint gItr = 0;
 
 	Stopwatch copyTimer;
-	Stopwatch computeTimer;	
+	Stopwatch computeTimer;
+	Stopwatch subgenTimer;
 		
 	for (; gItr < 10; gItr++)
 	{
 		
 		partitioner.partition(subgraph, subgraph.numActiveNodes);
-
-		cout << "random walk iteration " << gItr << endl;
-		cout << "num of partitions: " << partitioner.numPartitions << endl;
 
 		// a super iteration
 		for(int i=0; i<partitioner.numPartitions; i++)
@@ -157,15 +165,19 @@ int main(int argc, char** argv)
 												d_numWalker2,
 												randStates);		
 
-			moveWalkers<<< partitioner.partitionNodeSize[i]/512 + 1 , 512 >>>(subgraph.d_activeNodes, d_numWalker1, d_numWalker2, graph.d_value, partitioner.partitionNodeSize[i], partitioner.fromNode[i]);
+			//moveWalkers<<< partitioner.partitionNodeSize[i]/512 + 1 , 512 >>>(subgraph.d_activeNodes, d_numWalker1, d_numWalker2, graph.d_value, partitioner.partitionNodeSize[i], partitioner.fromNode[i]);
 
 			cudaDeviceSynchronize();
 			computeTimer.stop();
 			gpuErrorcheck( cudaPeekAtLastError() );	
 	
 		}
+
+		moveWalkers<<<graph.num_nodes/512 + 1, 512>>>(graph.num_nodes, d_numWalker1, d_numWalker2, graph.d_value);
 		
+		subgenTimer.start();
 		subgen.generate(graph, subgraph, d_numWalker1);
+		subgenTimer.stop();
 	}	
 	
 	float runtime = timer.Finish();
@@ -173,9 +185,15 @@ int main(int argc, char** argv)
 	
 	cout << "Number of iterations = " << gItr << endl;
 
-	cout << "compute time: " << computeTimer.total() << "ns copy time: " << copyTimer.total() << "ns\n";
+	cout << "compute time: " << computeTimer.total() << " ns copy time: " << copyTimer.total() << " ns subgen time: " << subgenTimer.total() << " ns\n";
 	
 	gpuErrorcheck(cudaMemcpy(graph.value, graph.d_value, graph.num_nodes*sizeof(float), cudaMemcpyDeviceToHost));
+
+	float sum = 0;
+	for (unsigned i = 0; i < graph.num_nodes; i++) {
+		sum += graph.value[i];
+	}
+	cout << "sum: " << sum << endl;
 	
 	utilities::PrintResults(graph.value, min(30, graph.num_nodes));
 

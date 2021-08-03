@@ -60,4 +60,4 @@ clean:
 	make -C $(SHARED) clean
 	make -C $(SUBWAY) clean
 	make -C $(TOOLS) clean
-	rm -f bfs-sync cc-sync sssp-sync sswp-sync pr-sync bfs-async cc-async sssp-async sswp-async pr-async
+	rm -f bfs-sync cc-sync sssp-sync sswp-sync pr-sync rw-sync bfs-async cc-async sssp-async sswp-async pr-async
