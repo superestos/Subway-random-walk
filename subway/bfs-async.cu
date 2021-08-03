@@ -8,7 +8,7 @@
 #include "../shared/gpu_error_check.cuh"
 #include "../shared/gpu_kernels.cuh"
 #include "../shared/subway_utilities.hpp"
-
+#include "../shared/stopwatch.h"
 
 int main(int argc, char** argv)
 {
@@ -58,6 +58,10 @@ int main(int argc, char** argv)
 	timer.Start();
 	
 	unsigned int gItr = 0;
+
+	Stopwatch copyTimer;
+	Stopwatch computeTimer;
+	Stopwatch subgenTimer;
 	
 	bool finished;
 	bool *d_finished;
@@ -71,9 +75,11 @@ int main(int argc, char** argv)
 		// a super iteration
 		for(int i=0; i<partitioner.numPartitions; i++)
 		{
+			copyTimer.start();
 			cudaDeviceSynchronize();
 			gpuErrorcheck(cudaMemcpy(subgraph.d_activeEdgeList, subgraph.activeEdgeList + partitioner.fromEdge[i], (partitioner.partitionEdgeSize[i]) * sizeof(OutEdge), cudaMemcpyHostToDevice));
 			cudaDeviceSynchronize();
+			copyTimer.stop();
 
 			//moveUpLabels<<< partitioner.partitionNodeSize[i]/512 + 1 , 512 >>>(subgraph.d_activeNodes, graph.d_label, partitioner.partitionNodeSize[i], partitioner.fromNode[i]);
 			mixLabels<<<partitioner.partitionNodeSize[i]/512 + 1 , 512>>>(subgraph.d_activeNodes, graph.d_label1, graph.d_label2, partitioner.partitionNodeSize[i], partitioner.fromNode[i]);
@@ -85,6 +91,7 @@ int main(int argc, char** argv)
 				finished = true;
 				gpuErrorcheck(cudaMemcpy(d_finished, &finished, sizeof(bool), cudaMemcpyHostToDevice));
 				
+				computeTimer.start();
 				bfs_async<<< partitioner.partitionNodeSize[i]/512 + 1 , 512 >>>(partitioner.partitionNodeSize[i],
 														partitioner.fromNode[i],
 														partitioner.fromEdge[i],
@@ -98,6 +105,7 @@ int main(int argc, char** argv)
 														(itr%2==1) ? graph.d_label2 : graph.d_label1);
 
 				cudaDeviceSynchronize();
+				computeTimer.stop();
 				gpuErrorcheck( cudaPeekAtLastError() );
 				
 				gpuErrorcheck(cudaMemcpy(&finished, d_finished, sizeof(bool), cudaMemcpyDeviceToHost));
@@ -106,12 +114,16 @@ int main(int argc, char** argv)
 			cout << itr << ((itr>1) ? " Inner Iterations" : " Inner Iteration") << " in Global Iteration " << gItr << ", Partition " << i  << endl;
 		}
 		
+		subgenTimer.start();
 		subgen.generate(graph, subgraph);
+		subgenTimer.stop();
 			
 	}	
 	
 	float runtime = timer.Finish();
 	cout << "Processing finished in " << runtime/1000 << " (s).\n";
+
+	cout << "compute time: " << computeTimer.total() << " ns copy time: " << copyTimer.total() << " ns subgen time: " << subgenTimer.total() << " ns\n";
 	
 	gpuErrorcheck(cudaMemcpy(graph.value, graph.d_value, graph.num_nodes*sizeof(uint), cudaMemcpyDeviceToHost));
 	

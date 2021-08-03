@@ -10,6 +10,8 @@
 #include "../shared/subway_utilities.hpp"
 #include "../shared/test.cuh"
 #include "../shared/test.cu"
+#include "../shared/stopwatch.h"
+
 
 
 int main(int argc, char** argv)
@@ -57,7 +59,9 @@ int main(int argc, char** argv)
 	timer.Start();
 	
 	uint gItr = 0;
-	
+
+	Stopwatch copyTimer;
+	Stopwatch computeTimer;	
 		
 	while (subgraph.numActiveNodes>0)
 	{
@@ -67,11 +71,13 @@ int main(int argc, char** argv)
 		// a super iteration
 		for(int i=0; i<partitioner.numPartitions; i++)
 		{
+			copyTimer.start();
 			cudaDeviceSynchronize();
 			gpuErrorcheck(cudaMemcpy(subgraph.d_activeEdgeList, subgraph.activeEdgeList + partitioner.fromEdge[i], (partitioner.partitionEdgeSize[i]) * sizeof(OutEdge), cudaMemcpyHostToDevice));
 			cudaDeviceSynchronize();
+			copyTimer.stop();
 			
-
+			computeTimer.start();
 			pr_kernel<<< partitioner.partitionNodeSize[i]/512 + 1 , 512 >>>(partitioner.partitionNodeSize[i],
 												partitioner.fromNode[i],
 												partitioner.fromEdge[i],
@@ -83,8 +89,8 @@ int main(int argc, char** argv)
 												graph.d_delta,
 												acc);		
 
-
 			cudaDeviceSynchronize();
+			computeTimer.stop();
 			gpuErrorcheck( cudaPeekAtLastError() );	
 	
 		}
@@ -97,6 +103,8 @@ int main(int argc, char** argv)
 	cout << "Processing finished in " << runtime/1000 << " (s).\n";
 	
 	cout << "Number of iterations = " << gItr << endl;
+
+	cout << "compute time: " << computeTimer.total() << "ns copy time: " << copyTimer.total() << "ns\n";
 	
 	gpuErrorcheck(cudaMemcpy(graph.value, graph.d_value, graph.num_nodes*sizeof(float), cudaMemcpyDeviceToHost));
 	

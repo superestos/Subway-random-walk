@@ -6,7 +6,7 @@ NFLAGS=-arch=sm_60
 
 SHARED=../shared
 
-all: bfs-sync.o cc-sync.o sssp-sync.o sswp-sync.o pr-sync.o bfs-async.o cc-async.o sssp-async.o sswp-async.o pr-async.o
+all: bfs-sync.o cc-sync.o sssp-sync.o sswp-sync.o pr-sync.o rw-sync.o bfs-async.o cc-async.o sssp-async.o sswp-async.o pr-async.o
 
 
 bfs-sync.o: bfs-sync.cu
@@ -24,6 +24,9 @@ sswp-sync.o: sswp-sync.cu
 pr-sync.o: pr-sync.cu
 	$(NC) -c pr-sync.cu $(CFLAGS) $(NFLAGS)			
 	
+rw-sync.o: rw-sync.cu
+	$(NC) -c rw-sync.cu $(CFLAGS) $(NFLAGS)	
+
 bfs-async.o: bfs-async.cu
 	$(NC) -c bfs-async.cu $(CFLAGS) $(NFLAGS)		
 

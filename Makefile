@@ -11,7 +11,7 @@ TOOLS=tools
 
 DEP=$(SHARED)/timer.o $(SHARED)/argument_parsing.o $(SHARED)/graph.o $(SHARED)/subgraph.o $(SHARED)/partitioner.o $(SHARED)/subgraph_generator.o $(SHARED)/gpu_kernels.o $(SHARED)/subway_utilities.o $(SHARED)/test.o  
 
-all: make1 make2 make3 bfs-sync cc-sync sssp-sync sswp-sync pr-sync bfs-async cc-async sssp-async sswp-async pr-async
+all: make1 make2 make3 bfs-sync cc-sync sssp-sync sswp-sync pr-sync rw-sync bfs-async cc-async sssp-async sswp-async pr-async
 
 make1:
 	make -C $(SHARED)
@@ -38,6 +38,9 @@ sswp-sync: $(SUBWAY)/sswp-sync.o $(DEP)
 pr-sync: $(SUBWAY)/pr-sync.o $(DEP)
 	$(NC) $(SUBWAY)/pr-sync.o $(DEP) -o pr-sync $(CFLAGS) $(NFLAGS)	
 	
+rw-sync: $(SUBWAY)/rw-sync.o $(DEP)
+	$(NC) $(SUBWAY)/rw-sync.o $(DEP) -o rw-sync $(CFLAGS) $(NFLAGS)	
+
 bfs-async: $(SUBWAY)/bfs-async.o $(DEP)
 	$(NC) $(SUBWAY)/bfs-async.o $(DEP) -o bfs-async $(CFLAGS) $(NFLAGS)	
 	
