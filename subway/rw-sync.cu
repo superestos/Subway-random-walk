@@ -85,6 +85,9 @@ __global__ void moveWalkers(unsigned int num_nodes, int *numWalker1, int *numWal
 
 int main(int argc, char** argv)
 {	
+	Stopwatch copyTimer;
+	Stopwatch computeTimer;
+
 	cudaFree(0);
 
 	ArgumentParser arguments(argc, argv, true, false);
@@ -132,10 +135,6 @@ int main(int argc, char** argv)
 	timer.Start();
 	
 	uint gItr = 0;
-
-	Stopwatch copyTimer;
-	Stopwatch computeTimer;
-	Stopwatch subgenTimer;
 		
 	for (; gItr < 10; gItr++)
 	{
@@ -175,9 +174,9 @@ int main(int argc, char** argv)
 
 		moveWalkers<<<graph.num_nodes/512 + 1, 512>>>(graph.num_nodes, d_numWalker1, d_numWalker2, graph.d_value);
 		
-		subgenTimer.start();
+		copyTimer.start();
 		subgen.generate(graph, subgraph, d_numWalker1);
-		subgenTimer.stop();
+		copyTimer.stop();
 	}	
 	
 	float runtime = timer.Finish();
@@ -185,13 +184,13 @@ int main(int argc, char** argv)
 	
 	cout << "Number of iterations = " << gItr << endl;
 
-	cout << "compute time: " << computeTimer.total() << " ns copy time: " << copyTimer.total() << " ns subgen time: " << subgenTimer.total() << " ns\n";
+	cout << "compute time: " << computeTimer.total() << " ns copy time: " << copyTimer.total() << " ns\n";
 	
 	gpuErrorcheck(cudaMemcpy(graph.value, graph.d_value, graph.num_nodes*sizeof(float), cudaMemcpyDeviceToHost));
 
-	float sum = 0;
+	unsigned long sum = 0;
 	for (unsigned i = 0; i < graph.num_nodes; i++) {
-		sum += graph.value[i];
+		sum += std::lround(graph.value[i] * 10);
 	}
 	cout << "sum: " << sum << endl;
 	

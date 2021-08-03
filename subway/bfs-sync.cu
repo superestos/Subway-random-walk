@@ -12,6 +12,9 @@
 
 int main(int argc, char** argv)
 {
+	Stopwatch copyTimer;
+	Stopwatch computeTimer;
+
 	cudaFree(0);
 
 	ArgumentParser arguments(argc, argv, true, false);
@@ -44,19 +47,15 @@ int main(int argc, char** argv)
 	Subgraph<OutEdge> subgraph(graph.num_nodes, graph.num_edges);
 	
 	SubgraphGenerator<OutEdge> subgen(graph);
-	
+	copyTimer.start();
 	subgen.generate(graph, subgraph);
-
+	copyTimer.stop();
 
 	Partitioner<OutEdge> partitioner;
 	
 	timer.Start();
 	
 	uint itr = 0;
-
-	Stopwatch copyTimer;
-	Stopwatch computeTimer;
-	Stopwatch subgenTimer;
 		
 	while (subgraph.numActiveNodes>0)
 	{
@@ -92,9 +91,9 @@ int main(int argc, char** argv)
 			gpuErrorcheck( cudaPeekAtLastError() );	
 		}
 		
-		subgenTimer.start();
+		copyTimer.start();
 		subgen.generate(graph, subgraph);
-		subgenTimer.stop();
+		copyTimer.stop();
 	}
 	
 	float runtime = timer.Finish();
@@ -102,7 +101,7 @@ int main(int argc, char** argv)
 	
 	cout << "Number of iterations = " << itr << endl;
 
-	cout << "compute time: " << computeTimer.total() << " ns copy time: " << copyTimer.total() << " ns subgen time: " << subgenTimer.total() << " ns\n";
+	cout << "compute time: " << computeTimer.total() << " ns copy time: " << copyTimer.total() << " ns\n";
 	
 	gpuErrorcheck(cudaMemcpy(graph.value, graph.d_value, graph.num_nodes*sizeof(uint), cudaMemcpyDeviceToHost));
 	

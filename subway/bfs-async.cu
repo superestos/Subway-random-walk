@@ -12,6 +12,9 @@
 
 int main(int argc, char** argv)
 {
+	Stopwatch copyTimer;
+	Stopwatch computeTimer;
+
 	cudaFree(0);
 
 	ArgumentParser arguments(argc, argv, true, false);
@@ -43,8 +46,9 @@ int main(int argc, char** argv)
 	Subgraph<OutEdge> subgraph(graph.num_nodes, graph.num_edges);
 	
 	SubgraphGenerator<OutEdge> subgen(graph);
-	
+	copyTimer.start();
 	subgen.generate(graph, subgraph);
+	copyTimer.stop();
 	
 	for(unsigned int i=0; i<graph.num_nodes; i++)
 	{
@@ -58,10 +62,6 @@ int main(int argc, char** argv)
 	timer.Start();
 	
 	unsigned int gItr = 0;
-
-	Stopwatch copyTimer;
-	Stopwatch computeTimer;
-	Stopwatch subgenTimer;
 	
 	bool finished;
 	bool *d_finished;
@@ -114,16 +114,16 @@ int main(int argc, char** argv)
 			cout << itr << ((itr>1) ? " Inner Iterations" : " Inner Iteration") << " in Global Iteration " << gItr << ", Partition " << i  << endl;
 		}
 		
-		subgenTimer.start();
+		copyTimer.start();
 		subgen.generate(graph, subgraph);
-		subgenTimer.stop();
+		copyTimer.stop();
 			
 	}	
 	
 	float runtime = timer.Finish();
 	cout << "Processing finished in " << runtime/1000 << " (s).\n";
 
-	cout << "compute time: " << computeTimer.total() << " ns copy time: " << copyTimer.total() << " ns subgen time: " << subgenTimer.total() << " ns\n";
+	cout << "compute time: " << computeTimer.total() << " ns copy time: " << copyTimer.total() << " ns\n";
 	
 	gpuErrorcheck(cudaMemcpy(graph.value, graph.d_value, graph.num_nodes*sizeof(uint), cudaMemcpyDeviceToHost));
 	
