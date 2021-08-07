@@ -56,12 +56,18 @@ int main(int argc, char** argv)
 	timer.Start();
 	
 	uint itr = 0;
+
+	unsigned long totalActiveNodes = 0;
 		
 	while (subgraph.numActiveNodes>0)
 	{
 		itr++;
 		
 		partitioner.partition(subgraph, subgraph.numActiveNodes);
+
+		cout << "num active nodes: " << subgraph.numActiveNodes << "\n";
+		totalActiveNodes += subgraph.numActiveNodes;
+
 		// a super iteration
 		for(int i=0; i<partitioner.numPartitions; i++)
 		{
@@ -102,6 +108,8 @@ int main(int argc, char** argv)
 	cout << "Number of iterations = " << itr << endl;
 
 	cout << "compute time: " << computeTimer.total() << " ns copy time: " << copyTimer.total() << " ns\n";
+
+	cout << "total active nodes: " << totalActiveNodes << "\n";
 	
 	gpuErrorcheck(cudaMemcpy(graph.value, graph.d_value, graph.num_nodes*sizeof(uint), cudaMemcpyDeviceToHost));
 	
