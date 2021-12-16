@@ -2,7 +2,7 @@
 
 CC=g++
 NC=nvcc
-CFLAGS=-std=c++14 -O3
+CFLAGS=-std=c++14 -g
 NFLAGS=-arch=sm_60
 
 SHARED=shared
