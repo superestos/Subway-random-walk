@@ -41,132 +41,14 @@ void Graph<E>::ReadGraph()
 		ifstream infile (graphFilePath, ios::in | ios::binary);
 	
 		infile.read ((char*)&num_nodes, sizeof(uint));
-		infile.read ((char*)&num_edges, sizeof(uint));
+		infile.read ((char*)&num_edges, sizeof(u_int64_t));
 		
-		nodePointer = new uint[num_nodes+1];
+		nodePointer = new u_int64_t[num_nodes+1];
 		gpuErrorcheck(cudaMallocHost(&edgeList, (num_edges) * sizeof(E)));
 		
-		infile.read ((char*)nodePointer, sizeof(uint)*num_nodes);
+		infile.read ((char*)nodePointer, sizeof(u_int64_t)*(num_nodes+1));
 		infile.read ((char*)edgeList, sizeof(E)*num_edges);
 		nodePointer[num_nodes] = num_edges;
-	}
-	else if(graphFormat == "el" || graphFormat == "wel")
-	{
-		ifstream infile;
-		infile.open(graphFilePath);
-		stringstream ss;
-		uint max = 0;
-		string line;
-		uint edgeCounter = 0;
-		if(isWeighted)
-		{
-			vector<EdgeWeighted> edges;
-			EdgeWeighted newEdge;
-			while(getline( infile, line ))
-			{
-				ss.str("");
-				ss.clear();
-				ss << line;
-				
-				ss >> newEdge.source;
-				ss >> newEdge.end;
-				ss >> newEdge.w8;
-				
-				edges.push_back(newEdge);
-				edgeCounter++;
-				
-				if(max < newEdge.source)
-					max = newEdge.source;
-				if(max < newEdge.end)
-					max = newEdge.end;				
-			}
-			infile.close();
-			num_nodes = max + 1;
-			num_edges = edgeCounter;
-			nodePointer = new uint[num_nodes+1];
-			gpuErrorcheck(cudaMallocHost(&edgeList, (num_edges) * sizeof(E)));
-			uint *degree = new uint[num_nodes];
-			for(uint i=0; i<num_nodes; i++)
-				degree[i] = 0;
-			for(uint i=0; i<num_edges; i++)
-				degree[edges[i].source]++;
-			
-			uint counter=0;
-			for(uint i=0; i<num_nodes; i++)
-			{
-				nodePointer[i] = counter;
-				counter = counter + degree[i];
-			}
-			nodePointer[num_nodes] = num_edges;
-			uint *outDegreeCounter  = new uint[num_nodes];
-			uint location;  
-			for(uint i=0; i<num_edges; i++)
-			{
-				location = nodePointer[edges[i].source] + outDegreeCounter[edges[i].source];
-				edgeList[location].end = edges[i].end;
-				if(isWeighted)
-					AssignW8(edges[i].w8, location);
-					//edgeList[location].w8 = edges[i].w8;
-				outDegreeCounter[edges[i].source]++;  
-			}
-			edges.clear();
-			delete[] degree;
-			delete[] outDegreeCounter;
-			
-		}
-		else
-		{
-			vector<Edge> edges;
-			Edge newEdge;
-			while(getline( infile, line ))
-			{
-				ss.str("");
-				ss.clear();
-				ss << line;
-				
-				ss >> newEdge.source;
-				ss >> newEdge.end;
-				
-				edges.push_back(newEdge);
-				edgeCounter++;
-				
-				if(max < newEdge.source)
-					max = newEdge.source;
-				if(max < newEdge.end)
-					max = newEdge.end;				
-			}
-			infile.close();
-			num_nodes = max + 1;
-			num_edges = edgeCounter;
-			nodePointer = new uint[num_nodes+1];
-			gpuErrorcheck(cudaMallocHost(&edgeList, (num_edges) * sizeof(E)));
-			uint *degree = new uint[num_nodes];
-			for(uint i=0; i<num_nodes; i++)
-				degree[i] = 0;
-			for(uint i=0; i<num_edges; i++)
-				degree[edges[i].source]++;
-			
-			uint counter=0;
-			for(uint i=0; i<num_nodes; i++)
-			{
-				nodePointer[i] = counter;
-				counter = counter + degree[i];
-			}
-			nodePointer[num_nodes] = num_edges;
-			uint *outDegreeCounter  = new uint[num_nodes];
-			uint location;  
-			for(uint i=0; i<num_edges; i++)
-			{
-				location = nodePointer[edges[i].source] + outDegreeCounter[edges[i].source];
-				edgeList[location].end = edges[i].end;
-				//if(isWeighted)
-				//	edgeList[location].w8 = edges[i].w8;
-				outDegreeCounter[edges[i].source]++;  
-			}
-			edges.clear();
-			delete[] degree;
-			delete[] outDegreeCounter;						
-		}
 	}
 	else
 	{
@@ -238,132 +120,13 @@ void GraphPR<E>::ReadGraph()
 		ifstream infile (graphFilePath, ios::in | ios::binary);
 	
 		infile.read ((char*)&num_nodes, sizeof(uint));
-		infile.read ((char*)&num_edges, sizeof(uint));
+		infile.read ((char*)&num_edges, sizeof(u_int64_t));
 		
-		nodePointer = new uint[num_nodes+1];
+		nodePointer = new u_int64_t[num_nodes+1];
 		gpuErrorcheck(cudaMallocHost(&edgeList, (num_edges) * sizeof(E)));
 		
-		infile.read ((char*)nodePointer, sizeof(uint)*num_nodes);
+		infile.read ((char*)nodePointer, sizeof(u_int64_t)*(num_nodes+1));
 		infile.read ((char*)edgeList, sizeof(E)*num_edges);
-		nodePointer[num_nodes] = num_edges;
-	}
-	else if(graphFormat == "el" || graphFormat == "wel")
-	{
-		ifstream infile;
-		infile.open(graphFilePath);
-		stringstream ss;
-		uint max = 0;
-		string line;
-		uint edgeCounter = 0;
-		if(isWeighted)
-		{
-			vector<EdgeWeighted> edges;
-			EdgeWeighted newEdge;
-			while(getline( infile, line ))
-			{
-				ss.str("");
-				ss.clear();
-				ss << line;
-				
-				ss >> newEdge.source;
-				ss >> newEdge.end;
-				ss >> newEdge.w8;
-				
-				edges.push_back(newEdge);
-				edgeCounter++;
-				
-				if(max < newEdge.source)
-					max = newEdge.source;
-				if(max < newEdge.end)
-					max = newEdge.end;				
-			}
-			infile.close();
-			num_nodes = max + 1;
-			num_edges = edgeCounter;
-			nodePointer = new uint[num_nodes+1];
-			gpuErrorcheck(cudaMallocHost(&edgeList, (num_edges) * sizeof(E)));
-			uint *degree = new uint[num_nodes];
-			for(uint i=0; i<num_nodes; i++)
-				degree[i] = 0;
-			for(uint i=0; i<num_edges; i++)
-				degree[edges[i].source]++;
-			
-			uint counter=0;
-			for(uint i=0; i<num_nodes; i++)
-			{
-				nodePointer[i] = counter;
-				counter = counter + degree[i];
-			}
-			nodePointer[num_nodes] = num_edges;
-			uint *outDegreeCounter  = new uint[num_nodes];
-			uint location;  
-			for(uint i=0; i<num_edges; i++)
-			{
-				location = nodePointer[edges[i].source] + outDegreeCounter[edges[i].source];
-				edgeList[location].end = edges[i].end;
-				if(isWeighted)
-					AssignW8(edges[i].w8, location);
-					//edgeList[location].w8 = edges[i].w8;
-				outDegreeCounter[edges[i].source]++;  
-			}
-			edges.clear();
-			delete[] degree;
-			delete[] outDegreeCounter;
-			
-		}
-		else
-		{
-			vector<Edge> edges;
-			Edge newEdge;
-			while(getline( infile, line ))
-			{
-				ss.str("");
-				ss.clear();
-				ss << line;
-				
-				ss >> newEdge.source;
-				ss >> newEdge.end;
-				
-				edges.push_back(newEdge);
-				edgeCounter++;
-				
-				if(max < newEdge.source)
-					max = newEdge.source;
-				if(max < newEdge.end)
-					max = newEdge.end;				
-			}
-			infile.close();
-			num_nodes = max + 1;
-			num_edges = edgeCounter;
-			nodePointer = new uint[num_nodes+1];
-			gpuErrorcheck(cudaMallocHost(&edgeList, (num_edges) * sizeof(E)));
-			uint *degree = new uint[num_nodes];
-			for(uint i=0; i<num_nodes; i++)
-				degree[i] = 0;
-			for(uint i=0; i<num_edges; i++)
-				degree[edges[i].source]++;
-			
-			uint counter=0;
-			for(uint i=0; i<num_nodes; i++)
-			{
-				nodePointer[i] = counter;
-				counter = counter + degree[i];
-			}
-			nodePointer[num_nodes] = num_edges;
-			uint *outDegreeCounter  = new uint[num_nodes];
-			uint location;  
-			for(uint i=0; i<num_edges; i++)
-			{
-				location = nodePointer[edges[i].source] + outDegreeCounter[edges[i].source];
-				edgeList[location].end = edges[i].end;
-				//if(isWeighted)
-				//	edgeList[location].w8 = edges[i].w8;
-				outDegreeCounter[edges[i].source]++;  
-			}
-			edges.clear();
-			delete[] degree;
-			delete[] outDegreeCounter;						
-		}
 	}
 	else
 	{

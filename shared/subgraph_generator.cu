@@ -49,7 +49,7 @@ __global__ void makeQueue(unsigned int *activeNodes, unsigned int *activeNodesLa
 	}
 }
 
-__global__ void makeActiveNodesPointer(unsigned int *activeNodesPointer, unsigned int *activeNodesLabeling, 
+__global__ void makeActiveNodesPointer(u_int64_t *activeNodesPointer, unsigned int *activeNodesLabeling, 
 											unsigned int *prefixLabeling, unsigned int *prefixSumDegrees, 
 											unsigned int numNodes)
 {
@@ -66,8 +66,8 @@ void dynamic(unsigned int tId,
 				unsigned int numActiveNodes,
 				unsigned int *activeNodes,
 				unsigned int *outDegree, 
-				unsigned int *activeNodesPointer,
-				unsigned int *nodePointer, 
+				u_int64_t *activeNodesPointer,
+				u_int64_t *nodePointer, 
 				E *activeEdgeList,
 				E *edgeList)
 {

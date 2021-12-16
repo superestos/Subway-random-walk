@@ -12,20 +12,20 @@ private:
 
 public:
 	uint num_nodes;
-	uint num_edges;
+	u_int64_t num_edges;
 	uint numActiveNodes;
 	
 	uint *activeNodes;
-	uint *activeNodesPointer;
+	u_int64_t *activeNodesPointer;
 	E *activeEdgeList;
 	
 	uint *d_activeNodes;
-	uint *d_activeNodesPointer;
+	u_int64_t *d_activeNodesPointer;
 	E *d_activeEdgeList;
 	
 	ull max_partition_size;
 	
-	Subgraph(uint num_nodes, uint num_edges);
+	Subgraph(uint num_nodes, u_int64_t num_edges);
 };
 
 #endif	//	SUBGRAPH_HPP

@@ -14,8 +14,8 @@ public:
 	bool isWeighted;
 	bool isLarge;
 	uint num_nodes;
-	uint num_edges;
-	uint *nodePointer;
+	u_int64_t num_edges;
+	u_int64_t *nodePointer;
 	E *edgeList;
 	uint *outDegree;
 	bool *label1;
@@ -42,8 +42,8 @@ public:
 	bool isWeighted;
 	bool isLarge;
 	uint num_nodes;
-	uint num_edges;
-	uint *nodePointer;
+	u_int64_t num_edges;
+	u_int64_t *nodePointer;
 	E *edgeList;
 	uint *outDegree;
 	float *value;
