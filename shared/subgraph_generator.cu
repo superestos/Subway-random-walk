@@ -152,11 +152,11 @@ void SubgraphGenerator<E>::generate(Graph<E> &graph, Subgraph<E> &subgraph)
 	makeActiveNodesPointer<<<graph.num_nodes/512+1, 512>>>(subgraph.d_activeNodesPointer, d_activeNodesLabeling, d_prefixLabeling, d_prefixSumDegrees, graph.num_nodes);
 	gpuErrorcheck(cudaMemcpy(subgraph.activeNodesPointer, subgraph.d_activeNodesPointer, subgraph.numActiveNodes*sizeof(u_int64_t), cudaMemcpyDeviceToHost));
 	
-	unsigned int numActiveEdges = 0;
+	u_int64_t numActiveEdges = 0;
 	if(subgraph.numActiveNodes>0)
 		numActiveEdges = subgraph.activeNodesPointer[subgraph.numActiveNodes-1] + graph.outDegree[subgraph.activeNodes[subgraph.numActiveNodes-1]];	
 	
-	unsigned int last = numActiveEdges;
+	u_int64_t last = numActiveEdges;
 	gpuErrorcheck(cudaMemcpy(subgraph.d_activeNodesPointer+subgraph.numActiveNodes, &last, sizeof(u_int64_t), cudaMemcpyHostToDevice));
 	
 	gpuErrorcheck(cudaMemcpy(subgraph.activeNodesPointer, subgraph.d_activeNodesPointer, (subgraph.numActiveNodes+1)*sizeof(u_int64_t), cudaMemcpyDeviceToHost));
@@ -233,7 +233,7 @@ void SubgraphGenerator<E>::generate(GraphPR<E> &graph, Subgraph<E> &subgraph, fl
 	makeActiveNodesPointer<<<graph.num_nodes/512+1, 512>>>(subgraph.d_activeNodesPointer, d_activeNodesLabeling, d_prefixLabeling, d_prefixSumDegrees, graph.num_nodes);
 	gpuErrorcheck(cudaMemcpy(subgraph.activeNodesPointer, subgraph.d_activeNodesPointer, subgraph.numActiveNodes*sizeof(u_int64_t), cudaMemcpyDeviceToHost));
 	
-	unsigned int numActiveEdges = 0;
+	u_int64_t numActiveEdges = 0;
 	if(subgraph.numActiveNodes>0)
 		numActiveEdges = subgraph.activeNodesPointer[subgraph.numActiveNodes-1] + graph.outDegree[subgraph.activeNodes[subgraph.numActiveNodes-1]];	
 	
@@ -331,11 +331,11 @@ void SubgraphGenerator<E>::generate(GraphPR<E> &graph, Subgraph<E> &subgraph, in
 	makeActiveNodesPointer<<<graph.num_nodes/512+1, 512>>>(subgraph.d_activeNodesPointer, d_activeNodesLabeling, d_prefixLabeling, d_prefixSumDegrees, graph.num_nodes);
 	gpuErrorcheck(cudaMemcpy(subgraph.activeNodesPointer, subgraph.d_activeNodesPointer, subgraph.numActiveNodes*sizeof(u_int64_t), cudaMemcpyDeviceToHost));
 	
-	unsigned int numActiveEdges = 0;
+	u_int64_t numActiveEdges = 0;
 	if(subgraph.numActiveNodes>0)
 		numActiveEdges = subgraph.activeNodesPointer[subgraph.numActiveNodes-1] + graph.outDegree[subgraph.activeNodes[subgraph.numActiveNodes-1]];	
 	
-	unsigned int last = numActiveEdges;
+	u_int64_t last = numActiveEdges;
 	gpuErrorcheck(cudaMemcpy(subgraph.d_activeNodesPointer+subgraph.numActiveNodes, &last, sizeof(u_int64_t), cudaMemcpyHostToDevice));
 	
 	gpuErrorcheck(cudaMemcpy(subgraph.activeNodesPointer, subgraph.d_activeNodesPointer, (subgraph.numActiveNodes+1)*sizeof(u_int64_t), cudaMemcpyDeviceToHost));

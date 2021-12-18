@@ -177,7 +177,10 @@ int main(int argc, char** argv)
 	
 		}
 
+		computeTimer.stop();
 		moveWalkers<<<graph.num_nodes/512 + 1, 512>>>(graph.num_nodes, d_numWalker1, d_numWalker2, graph.d_value);
+		cudaDeviceSynchronize();
+		computeTimer.stop();
 		
 		copyTimer.start();
 		subgen.generate(graph, subgraph, d_numWalker1);
