@@ -15,9 +15,9 @@ void Partitioner<E>::partition(Subgraph<E> &subgraph, uint numActiveNodes)
 	
 	unsigned int from, to;
 	unsigned int left, right, mid;
-	unsigned int partitionSize;
+	u_int64_t partitionSize;
 	unsigned int numNodesInPartition;
-	unsigned int numPartitionedEdges;
+	u_int64_t numPartitionedEdges;
 	bool foundTo;
 	unsigned int accurCount;
 	
