@@ -1,8 +1,9 @@
+#include <curand.h>
+#include <curand_kernel.h>
 
 #include "globals.hpp"
 #include "graph.cuh"
 #include "subgraph.cuh"
-
 
 __global__ void bfs_kernel(unsigned int numNodes,
 							unsigned int from,
@@ -123,6 +124,24 @@ __global__ void pr_async(unsigned int numNodes,
 							float *delta,
 							bool *finished,
 							float acc);	
+
+__global__ void init_rand(curandState *randStates, int size);
+
+__global__ void rw_kernel(	unsigned int numAllNodes,
+							unsigned int numNodes,
+							unsigned int from,
+							unsigned int numPartitionedEdges,
+							unsigned int *activeNodes,
+							u_int64_t *activeNodesPointer,
+							OutEdge *edgeList,
+							unsigned int *outDegree,
+							float *value,
+							int *numWalker1,
+							int *numWalker2,
+							curandState *randStates
+							);
+
+
 
 __global__ void clearLabel(unsigned int * activeNodes, bool *label, unsigned int size, unsigned int from);
 

@@ -12,53 +12,6 @@
 #include "../shared/test.cu"
 #include "../shared/stopwatch.h"
 
-#include <curand.h>
-#include <curand_kernel.h>
-
-__global__ void init_rand(curandState *randStates, int size) {
-	unsigned int tId = blockDim.x * blockIdx.x + threadIdx.x;
-	curand_init(0, tId, 0, &randStates[tId]);
-}
-
-__global__ void rw_kernel(	unsigned int numAllNodes,
-							unsigned int numNodes,
-							unsigned int from,
-							unsigned int numPartitionedEdges,
-							unsigned int *activeNodes,
-							u_int64_t *activeNodesPointer,
-							OutEdge *edgeList,
-							unsigned int *outDegree,
-							float *value,
-							int *numWalker1,
-							int *numWalker2,
-							curandState *randStates
-							)
-{
-	unsigned int tId = blockDim.x * blockIdx.x + threadIdx.x;
-
-	if(tId < numNodes)
-	{
-		unsigned int id = activeNodes[from + tId];
-		unsigned int degree = outDegree[id];
-		int thisNumWalker = numWalker1[id];
-
-		unsigned int thisfrom = activeNodesPointer[from+tId]-numPartitionedEdges;
-
-		for (int i = 0; i < thisNumWalker; i++) {
-			unsigned int end;
-			if (degree == 0 || curand_uniform(&randStates[threadIdx.x]) < 0.15) {
-				end = (unsigned int)(numAllNodes * curand_uniform(&randStates[threadIdx.x]));
-			}
-			else {
-				end = edgeList[thisfrom + (unsigned int)(degree * curand_uniform(&randStates[threadIdx.x]))].end;
-			}
-			end = (end >= numAllNodes)? numAllNodes - 1: end;
-
-			atomicAdd(&numWalker2[end], 1);
-		}
-	}
-}
-
 /*
 __global__ void moveWalkers(unsigned int * activeNodes, int *numWalker1, int *numWalker2, float *value, unsigned int size, unsigned int from)
 {

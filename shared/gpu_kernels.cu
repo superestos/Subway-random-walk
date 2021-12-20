@@ -5,6 +5,8 @@
 #include "graph.cuh"
 #include "subgraph.cuh"
 
+#include <curand.h>
+#include <curand_kernel.h>
 
 __global__ void bfs_kernel(unsigned int numNodes,
 							unsigned int from,
@@ -31,15 +33,15 @@ __global__ void bfs_kernel(unsigned int numNodes,
 
 		unsigned int sourceWeight = value[id];
 
-		unsigned int thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
+		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
 		unsigned int degree = outDegree[id];
-		unsigned int thisTo = thisFrom + degree;
+		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
 		
 		unsigned int finalDist;
 		
-		for(unsigned int i=thisFrom; i<thisTo; i++)
+		for(u_int64_t i=thisFrom; i<thisTo; i++)
 		{	
 			//finalDist = sourceWeight + edgeList[i].w8;
 			finalDist = sourceWeight + 1;
@@ -82,15 +84,15 @@ __global__ void cc_kernel(unsigned int numNodes,
 		
 		unsigned int sourceWeight = dist[id];
 
-		unsigned int thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
+		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
 		unsigned int degree = outDegree[id];
-		unsigned int thisTo = thisFrom + degree;
+		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
 		
 		//unsigned int finalDist;
 		
-		for(unsigned int i=thisFrom; i<thisTo; i++)
+		for(u_int64_t i=thisFrom; i<thisTo; i++)
 		{	
 			//finalDist = sourceWeight + edgeList[i].w8;
 			if(sourceWeight < dist[edgeList[i].end])
@@ -133,15 +135,15 @@ __global__ void sssp_kernel(unsigned int numNodes,
 
 		unsigned int sourceWeight = dist[id];
 
-		unsigned int thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
+		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
 		unsigned int degree = outDegree[id];
-		unsigned int thisTo = thisFrom + degree;
+		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
 		
 		unsigned int finalDist;
 		
-		for(unsigned int i=thisFrom; i<thisTo; i++)
+		for(u_int64_t i=thisFrom; i<thisTo; i++)
 		{	
 			finalDist = sourceWeight + edgeList[i].w8;
 			if(finalDist < dist[edgeList[i].end])
@@ -183,15 +185,15 @@ __global__ void sswp_kernel(unsigned int numNodes,
 		
 		unsigned int sourceWeight = dist[id];
 
-		unsigned int thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
+		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
 		unsigned int degree = outDegree[id];
-		unsigned int thisTo = thisFrom + degree;
+		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
 		
 		unsigned int finalDist;
 		
-		for(unsigned int i=thisFrom; i<thisTo; i++)
+		for(u_int64_t i=thisFrom; i<thisTo; i++)
 		{	
 			finalDist = min(sourceWeight, edgeList[i].w8);
 			if(finalDist > dist[edgeList[i].end])
@@ -238,10 +240,10 @@ __global__ void pr_kernel(unsigned int numNodes,
 				
 				float sourcePR = ((float) thisDelta / degree) * 0.85;
 
-				unsigned int thisfrom = activeNodesPointer[from+tId]-numPartitionedEdges;
-				unsigned int thisto = thisfrom + degree;
+				u_int64_t thisfrom = activeNodesPointer[from+tId]-numPartitionedEdges;
+				u_int64_t thisto = thisfrom + degree;
 				
-				for(unsigned int i=thisfrom; i<thisto; i++)
+				for(u_int64_t i=thisfrom; i<thisto; i++)
 				{
 					atomicAdd(&delta[edgeList[i].end], sourcePR);
 				}				
@@ -279,15 +281,15 @@ __global__ void bfs_async(unsigned int numNodes,
 		
 		unsigned int sourceWeight = dist[id];
 
-		unsigned int thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
+		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
 		unsigned int degree = outDegree[id];
-		unsigned int thisTo = thisFrom + degree;
+		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
 		
 		unsigned int finalDist;
 		
-		for(unsigned int i=thisFrom; i<thisTo; i++)
+		for(u_int64_t i=thisFrom; i<thisTo; i++)
 		{	
 			//finalDist = sourceWeight + edgeList[i].w8;
 			finalDist = sourceWeight + 1;
@@ -330,15 +332,15 @@ __global__ void sssp_async(unsigned int numNodes,
 		
 		unsigned int sourceWeight = dist[id];
 
-		unsigned int thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
+		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
 		unsigned int degree = outDegree[id];
-		unsigned int thisTo = thisFrom + degree;
+		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
 		
 		unsigned int finalDist;
 		
-		for(unsigned int i=thisFrom; i<thisTo; i++)
+		for(u_int64_t i=thisFrom; i<thisTo; i++)
 		{	
 			finalDist = sourceWeight + edgeList[i].w8;
 			if(finalDist < dist[edgeList[i].end])
@@ -380,14 +382,14 @@ __global__ void sswp_async(unsigned int numNodes,
 		
 		unsigned int sourceWeight = dist[id];
 
-		unsigned int thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
+		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
 		unsigned int degree = outDegree[id];
-		unsigned int thisTo = thisFrom + degree;
+		u_int64_t thisTo = thisFrom + degree;
 		
 		
 		unsigned int finalDist;
 		
-		for(unsigned int i=thisFrom; i<thisTo; i++)
+		for(u_int64_t i=thisFrom; i<thisTo; i++)
 		{	
 			finalDist = min(sourceWeight, edgeList[i].w8);
 			if(finalDist > dist[edgeList[i].end])
@@ -430,15 +432,15 @@ __global__ void cc_async(unsigned int numNodes,
 
 		unsigned int sourceWeight = dist[id];
 
-		unsigned int thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
+		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
 		unsigned int degree = outDegree[id];
-		unsigned int thisTo = thisFrom + degree;
+		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
 		
 		//unsigned int finalDist;
 		
-		for(unsigned int i=thisFrom; i<thisTo; i++)
+		for(u_int64_t i=thisFrom; i<thisTo; i++)
 		{	
 			//finalDist = sourceWeight + edgeList[i].w8;
 			if(sourceWeight < dist[edgeList[i].end])
@@ -486,10 +488,10 @@ __global__ void pr_async(unsigned int numNodes,
 				
 				float sourcePR = ((float) thisDelta / degree) * 0.85;
 
-				unsigned int thisfrom = activeNodesPointer[from+tId]-numPartitionedEdges;
-				unsigned int thisto = thisfrom + degree;
+				u_int64_t thisfrom = activeNodesPointer[from+tId]-numPartitionedEdges;
+				u_int64_t thisto = thisfrom + degree;
 				
-				for(unsigned int i=thisfrom; i<thisto; i++)
+				for(u_int64_t i=thisfrom; i<thisto; i++)
 				{
 					atomicAdd(&delta[edgeList[i].end], sourcePR);
 				}				
@@ -501,7 +503,53 @@ __global__ void pr_async(unsigned int numNodes,
 	}
 }
 
+__global__ void init_rand(curandState *randStates, int size) {
+	unsigned int tId = blockDim.x * blockIdx.x + threadIdx.x;
+	curand_init(0, tId, 0, &randStates[tId]);
+}
 
+__device__ u_int32_t uniform_discrete_distribution(curandState &state, u_int32_t n) {
+    return ((static_cast<u_int64_t>(curand(&state)) << 32) + curand(&state)) % n;
+}
+
+__global__ void rw_kernel(	unsigned int numAllNodes,
+							unsigned int numNodes,
+							unsigned int from,
+							unsigned int numPartitionedEdges,
+							unsigned int *activeNodes,
+							u_int64_t *activeNodesPointer,
+							OutEdge *edgeList,
+							unsigned int *outDegree,
+							float *value,
+							int *numWalker1,
+							int *numWalker2,
+							curandState *randStates
+							)
+{
+	unsigned int tId = blockDim.x * blockIdx.x + threadIdx.x;
+
+	if(tId < numNodes)
+	{
+		unsigned int id = activeNodes[from + tId];
+		unsigned int degree = outDegree[id];
+		int thisNumWalker = numWalker1[id];
+
+		u_int64_t thisfrom = activeNodesPointer[from+tId]-numPartitionedEdges;
+
+		for (int i = 0; i < thisNumWalker; i++) {
+			unsigned int end;
+			if (degree == 0 || curand_uniform(&randStates[threadIdx.x]) < 0.15) {
+				end = uniform_discrete_distribution(randStates[threadIdx.x], numAllNodes);
+			}
+			else {
+				end = edgeList[thisfrom + uniform_discrete_distribution(randStates[threadIdx.x], degree)].end;
+			}
+			end = (end >= numAllNodes)? numAllNodes - 1: end;
+
+			atomicAdd(&numWalker2[end], 1);
+		}
+	}
+}
 
 __global__ void clearLabel(unsigned int * activeNodes, bool *label, unsigned int size, unsigned int from)
 {
