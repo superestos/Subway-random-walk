@@ -515,7 +515,7 @@ __device__ u_int32_t uniform_discrete_distribution(curandState &state, u_int32_t
 __global__ void rw_kernel(	unsigned int numAllNodes,
 							unsigned int numNodes,
 							unsigned int from,
-							unsigned int numPartitionedEdges,
+							u_int64_t numPartitionedEdges,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdge *edgeList,
@@ -544,7 +544,6 @@ __global__ void rw_kernel(	unsigned int numAllNodes,
 			else {
 				end = edgeList[thisfrom + uniform_discrete_distribution(randStates[threadIdx.x], degree)].end;
 			}
-			end = (end >= numAllNodes)? numAllNodes - 1: end;
 
 			atomicAdd(&numWalker2[end], 1);
 		}

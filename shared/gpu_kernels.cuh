@@ -130,7 +130,7 @@ __global__ void init_rand(curandState *randStates, int size);
 __global__ void rw_kernel(	unsigned int numAllNodes,
 							unsigned int numNodes,
 							unsigned int from,
-							unsigned int numPartitionedEdges,
+							u_int64_t numPartitionedEdges,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdge *edgeList,
