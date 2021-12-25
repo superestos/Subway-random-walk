@@ -17,11 +17,11 @@ public:
 	u_int64_t num_edges;
 	u_int64_t *nodePointer;
 	E *edgeList;
-	uint *outDegree;
+	u_int64_t *outDegree;
 	bool *label1;
 	bool *label2;
 	uint *value;
-	uint *d_outDegree;
+	u_int64_t *d_outDegree;
 	uint *d_value;
 	bool *d_label1;
 	bool *d_label2;
@@ -45,10 +45,10 @@ public:
 	u_int64_t num_edges;
 	u_int64_t *nodePointer;
 	E *edgeList;
-	uint *outDegree;
+	u_int64_t *outDegree;
 	float *value;
 	float *delta;
-	uint *d_outDegree;
+	u_int64_t *d_outDegree;
 	float *d_value;
 	float *d_delta;
 	string graphFormat;

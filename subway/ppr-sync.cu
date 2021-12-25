@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     numWalker1[arguments.sourceNode] = num_walkers;
 
 
-	gpuErrorcheck(cudaMemcpy(graph.d_outDegree, graph.outDegree, graph.num_nodes * sizeof(unsigned int), cudaMemcpyHostToDevice));
+	gpuErrorcheck(cudaMemcpy(graph.d_outDegree, graph.outDegree, graph.num_nodes * sizeof(u_int64_t), cudaMemcpyHostToDevice));
 	gpuErrorcheck(cudaMemcpy(graph.d_value, graph.value, graph.num_nodes * sizeof(float), cudaMemcpyHostToDevice));
 	gpuErrorcheck(cudaMemcpy(d_numWalker1, numWalker1, graph.num_nodes * sizeof(int), cudaMemcpyHostToDevice));
 	

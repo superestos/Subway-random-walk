@@ -56,7 +56,7 @@ void Graph<E>::ReadGraph()
 		exit(-1);
 	}
 	
-	outDegree  = new unsigned int[num_nodes];
+	outDegree  = new u_int64_t[num_nodes];
 	
 	for(uint i=1; i<num_nodes-1; i++)
 		outDegree[i-1] = nodePointer[i] - nodePointer[i-1];
@@ -66,7 +66,7 @@ void Graph<E>::ReadGraph()
 	label2 = new bool[num_nodes];
 	value  = new unsigned int[num_nodes];
 	
-	gpuErrorcheck(cudaMalloc(&d_outDegree, num_nodes * sizeof(unsigned int)));
+	gpuErrorcheck(cudaMalloc(&d_outDegree, num_nodes * sizeof(u_int64_t)));
 	gpuErrorcheck(cudaMalloc(&d_value, num_nodes * sizeof(unsigned int)));
 	gpuErrorcheck(cudaMalloc(&d_label1, num_nodes * sizeof(bool)));
 	gpuErrorcheck(cudaMalloc(&d_label2, num_nodes * sizeof(bool)));
@@ -134,7 +134,7 @@ void GraphPR<E>::ReadGraph()
 		exit(-1);
 	}
 	
-	outDegree  = new unsigned int[num_nodes];
+	outDegree  = new u_int64_t[num_nodes];
 	
 	for(uint i=1; i<num_nodes-1; i++)
 		outDegree[i-1] = nodePointer[i] - nodePointer[i-1];
@@ -144,7 +144,7 @@ void GraphPR<E>::ReadGraph()
 	value  = new float[num_nodes];
 	delta  = new float[num_nodes];
 	
-	gpuErrorcheck(cudaMalloc(&d_outDegree, num_nodes * sizeof(unsigned int)));
+	gpuErrorcheck(cudaMalloc(&d_outDegree, num_nodes * sizeof(u_int64_t)));
 	gpuErrorcheck(cudaMalloc(&d_value, num_nodes * sizeof(float)));
 	gpuErrorcheck(cudaMalloc(&d_delta, num_nodes * sizeof(float)));
 	

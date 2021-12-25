@@ -14,7 +14,7 @@ __global__ void bfs_kernel(unsigned int numNodes,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdge *edgeList,
-							unsigned int *outDegree,
+							u_int64_t *outDegree,
 							unsigned int *value,
 							//bool *finished,
 							bool *label1,
@@ -34,7 +34,7 @@ __global__ void bfs_kernel(unsigned int numNodes,
 		unsigned int sourceWeight = value[id];
 
 		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
-		unsigned int degree = outDegree[id];
+		u_int64_t degree = outDegree[id];
 		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
@@ -65,7 +65,7 @@ __global__ void cc_kernel(unsigned int numNodes,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdge *edgeList,
-							unsigned int *outDegree,
+							u_int64_t *outDegree,
 							unsigned int *dist,
 							//bool *finished,
 							bool *label1,
@@ -85,7 +85,7 @@ __global__ void cc_kernel(unsigned int numNodes,
 		unsigned int sourceWeight = dist[id];
 
 		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
-		unsigned int degree = outDegree[id];
+		u_int64_t degree = outDegree[id];
 		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
@@ -116,7 +116,7 @@ __global__ void sssp_kernel(unsigned int numNodes,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdgeWeighted *edgeList,
-							unsigned int *outDegree,
+							u_int64_t *outDegree,
 							unsigned int *dist,
 							//bool *finished,
 							bool *label1,
@@ -136,7 +136,7 @@ __global__ void sssp_kernel(unsigned int numNodes,
 		unsigned int sourceWeight = dist[id];
 
 		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
-		unsigned int degree = outDegree[id];
+		u_int64_t degree = outDegree[id];
 		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
@@ -166,7 +166,7 @@ __global__ void sswp_kernel(unsigned int numNodes,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdgeWeighted *edgeList,
-							unsigned int *outDegree,
+							u_int64_t *outDegree,
 							unsigned int *dist,
 							//bool *finished,
 							bool *label1,
@@ -186,7 +186,7 @@ __global__ void sswp_kernel(unsigned int numNodes,
 		unsigned int sourceWeight = dist[id];
 
 		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
-		unsigned int degree = outDegree[id];
+		u_int64_t degree = outDegree[id];
 		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
@@ -216,7 +216,7 @@ __global__ void pr_kernel(unsigned int numNodes,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdge *edgeList,
-							unsigned int *outDegree,
+							u_int64_t *outDegree,
 							float *dist,
 							float *delta,
 							//bool *finished,
@@ -227,7 +227,7 @@ __global__ void pr_kernel(unsigned int numNodes,
 	if(tId < numNodes)
 	{
 		unsigned int id = activeNodes[from + tId];
-		unsigned int degree = outDegree[id];
+		u_int64_t degree = outDegree[id];
 		float thisDelta = delta[id];
 
 		if(thisDelta > acc)
@@ -262,7 +262,7 @@ __global__ void bfs_async(unsigned int numNodes,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdge *edgeList,
-							unsigned int *outDegree,
+							u_int64_t *outDegree,
 							unsigned int *dist,
 							bool *finished,
 							bool *label1,
@@ -282,7 +282,7 @@ __global__ void bfs_async(unsigned int numNodes,
 		unsigned int sourceWeight = dist[id];
 
 		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
-		unsigned int degree = outDegree[id];
+		u_int64_t degree = outDegree[id];
 		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
@@ -313,7 +313,7 @@ __global__ void sssp_async(unsigned int numNodes,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdgeWeighted *edgeList,
-							unsigned int *outDegree,
+							u_int64_t *outDegree,
 							unsigned int *dist,
 							bool *finished,
 							bool *label1,
@@ -363,7 +363,7 @@ __global__ void sswp_async(unsigned int numNodes,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdgeWeighted *edgeList,
-							unsigned int *outDegree,
+							u_int64_t *outDegree,
 							unsigned int *dist,
 							bool *finished,
 							bool *label1,
@@ -383,7 +383,7 @@ __global__ void sswp_async(unsigned int numNodes,
 		unsigned int sourceWeight = dist[id];
 
 		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
-		unsigned int degree = outDegree[id];
+		u_int64_t degree = outDegree[id];
 		u_int64_t thisTo = thisFrom + degree;
 		
 		
@@ -413,7 +413,7 @@ __global__ void cc_async(unsigned int numNodes,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdge *edgeList,
-							unsigned int *outDegree,
+							u_int64_t *outDegree,
 							unsigned int *dist,
 							bool *finished,
 							bool *label1,
@@ -433,7 +433,7 @@ __global__ void cc_async(unsigned int numNodes,
 		unsigned int sourceWeight = dist[id];
 
 		u_int64_t thisFrom = activeNodesPointer[from+tId]-numPartitionedEdges;
-		unsigned int degree = outDegree[id];
+		u_int64_t degree = outDegree[id];
 		u_int64_t thisTo = thisFrom + degree;
 		
 		//printf("******* %i\n", thisFrom);
@@ -464,7 +464,7 @@ __global__ void pr_async(unsigned int numNodes,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdge *edgeList,
-							unsigned int *outDegree,
+							u_int64_t *outDegree,
 							float *dist,
 							float *delta,
 							bool *finished,
@@ -475,7 +475,7 @@ __global__ void pr_async(unsigned int numNodes,
 	if(tId < numNodes)
 	{
 		unsigned int id = activeNodes[from + tId];
-		unsigned int degree = outDegree[id];
+		u_int64_t degree = outDegree[id];
 		float thisDelta = delta[id];
 
 		if(thisDelta > acc)
@@ -519,7 +519,7 @@ __global__ void rw_kernel(	unsigned int numAllNodes,
 							unsigned int *activeNodes,
 							u_int64_t *activeNodesPointer,
 							OutEdge *edgeList,
-							unsigned int *outDegree,
+							u_int64_t *outDegree,
 							float *value,
 							int *numWalker1,
 							int *numWalker2,
@@ -531,7 +531,7 @@ __global__ void rw_kernel(	unsigned int numAllNodes,
 	if(tId < numNodes)
 	{
 		unsigned int id = activeNodes[from + tId];
-		unsigned int degree = outDegree[id];
+		u_int64_t degree = outDegree[id];
 		int thisNumWalker = numWalker1[id];
 
 		u_int64_t thisfrom = activeNodesPointer[from+tId]-numPartitionedEdges;

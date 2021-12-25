@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 	//graph.label[arguments.sourceNode] = true;
 
 
-	gpuErrorcheck(cudaMemcpy(graph.d_outDegree, graph.outDegree, graph.num_nodes * sizeof(unsigned int), cudaMemcpyHostToDevice));
+	gpuErrorcheck(cudaMemcpy(graph.d_outDegree, graph.outDegree, graph.num_nodes * sizeof(u_int64_t), cudaMemcpyHostToDevice));
 	gpuErrorcheck(cudaMemcpy(graph.d_value, graph.value, graph.num_nodes * sizeof(float), cudaMemcpyHostToDevice));
 	gpuErrorcheck(cudaMemcpy(graph.d_delta, graph.delta, graph.num_nodes * sizeof(float), cudaMemcpyHostToDevice));
 	

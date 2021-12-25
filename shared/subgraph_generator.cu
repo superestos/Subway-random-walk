@@ -7,8 +7,8 @@ const unsigned int NUM_THREADS = 64;
 
 const unsigned int THRESHOLD_THREAD = 50000;
 
-__global__ void prePrefix(unsigned int *activeNodesLabeling, unsigned int *activeNodesDegree, 
-							unsigned int *outDegree, bool *label1, bool *label2, unsigned int numNodes)
+__global__ void prePrefix(unsigned int *activeNodesLabeling, u_int64_t *activeNodesDegree, 
+							u_int64_t *outDegree, bool *label1, bool *label2, unsigned int numNodes)
 {
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
 	if(id < numNodes){
@@ -21,8 +21,8 @@ __global__ void prePrefix(unsigned int *activeNodesLabeling, unsigned int *activ
 	}	
 }
 
-__global__ void prePrefix(unsigned int *activeNodesLabeling, unsigned int *activeNodesDegree, 
-							unsigned int *outDegree, float *delta, unsigned int numNodes, float acc)
+__global__ void prePrefix(unsigned int *activeNodesLabeling, u_int64_t *activeNodesDegree, 
+							u_int64_t *outDegree, float *delta, unsigned int numNodes, float acc)
 {
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
 	if(id < numNodes){
@@ -50,7 +50,7 @@ __global__ void makeQueue(unsigned int *activeNodes, unsigned int *activeNodesLa
 }
 
 __global__ void makeActiveNodesPointer(u_int64_t *activeNodesPointer, unsigned int *activeNodesLabeling, 
-											unsigned int *prefixLabeling, unsigned int *prefixSumDegrees, 
+											unsigned int *prefixLabeling, u_int64_t *prefixSumDegrees, 
 											unsigned int numNodes)
 {
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
@@ -65,7 +65,7 @@ void dynamic(unsigned int tId,
 				unsigned int numThreads,	
 				unsigned int numActiveNodes,
 				unsigned int *activeNodes,
-				unsigned int *outDegree, 
+				u_int64_t *outDegree, 
 				u_int64_t *activeNodesPointer,
 				u_int64_t *nodePointer, 
 				E *activeEdgeList,
@@ -78,9 +78,9 @@ void dynamic(unsigned int tId,
 	right = min(left+chunkSize, numActiveNodes);	
 	
 	unsigned int thisNode;
-	unsigned int thisDegree;
-	unsigned int fromHere;
-	unsigned int fromThere;
+	u_int64_t thisDegree;
+	u_int64_t fromHere;
+	u_int64_t fromThere;
 
 	for(unsigned int i=left; i<right; i++)
 	{
@@ -88,7 +88,7 @@ void dynamic(unsigned int tId,
 		thisDegree = outDegree[thisNode];
 		fromHere = activeNodesPointer[i];
 		fromThere = nodePointer[thisNode];
-		for(unsigned int j=0; j<thisDegree; j++)
+		for(u_int64_t j=0; j<thisDegree; j++)
 		{
 			activeEdgeList[fromHere+j] = edgeList[fromThere+j];
 		}
@@ -100,28 +100,28 @@ template <class E>
 SubgraphGenerator<E>::SubgraphGenerator(Graph<E> &graph)
 {
 	gpuErrorcheck(cudaMallocHost(&activeNodesLabeling, graph.num_nodes * sizeof(unsigned int)));
-	gpuErrorcheck(cudaMallocHost(&activeNodesDegree, graph.num_nodes * sizeof(unsigned int)));
+	gpuErrorcheck(cudaMallocHost(&activeNodesDegree, graph.num_nodes * sizeof(u_int64_t)));
 	gpuErrorcheck(cudaMallocHost(&prefixLabeling, graph.num_nodes * sizeof(unsigned int)));
-	gpuErrorcheck(cudaMallocHost(&prefixSumDegrees, (graph.num_nodes+1) * sizeof(unsigned int)));
+	gpuErrorcheck(cudaMallocHost(&prefixSumDegrees, (graph.num_nodes+1) * sizeof(u_int64_t)));
 	
 	gpuErrorcheck(cudaMalloc(&d_activeNodesLabeling, graph.num_nodes * sizeof(unsigned int)));
-	gpuErrorcheck(cudaMalloc(&d_activeNodesDegree, graph.num_nodes * sizeof(unsigned int)));
+	gpuErrorcheck(cudaMalloc(&d_activeNodesDegree, graph.num_nodes * sizeof(u_int64_t)));
 	gpuErrorcheck(cudaMalloc(&d_prefixLabeling, graph.num_nodes * sizeof(unsigned int)));
-	gpuErrorcheck(cudaMalloc(&d_prefixSumDegrees , (graph.num_nodes+1) * sizeof(unsigned int)));
+	gpuErrorcheck(cudaMalloc(&d_prefixSumDegrees , (graph.num_nodes+1) * sizeof(u_int64_t)));
 }
 
 template <class E>
 SubgraphGenerator<E>::SubgraphGenerator(GraphPR<E> &graph)
 {
 	gpuErrorcheck(cudaMallocHost(&activeNodesLabeling, graph.num_nodes * sizeof(unsigned int)));
-	gpuErrorcheck(cudaMallocHost(&activeNodesDegree, graph.num_nodes * sizeof(unsigned int)));
+	gpuErrorcheck(cudaMallocHost(&activeNodesDegree, graph.num_nodes * sizeof(u_int64_t)));
 	gpuErrorcheck(cudaMallocHost(&prefixLabeling, graph.num_nodes * sizeof(unsigned int)));
-	gpuErrorcheck(cudaMallocHost(&prefixSumDegrees, (graph.num_nodes+1) * sizeof(unsigned int)));
+	gpuErrorcheck(cudaMallocHost(&prefixSumDegrees, (graph.num_nodes+1) * sizeof(u_int64_t)));
 	
 	gpuErrorcheck(cudaMalloc(&d_activeNodesLabeling, graph.num_nodes * sizeof(unsigned int)));
-	gpuErrorcheck(cudaMalloc(&d_activeNodesDegree, graph.num_nodes * sizeof(unsigned int)));
+	gpuErrorcheck(cudaMalloc(&d_activeNodesDegree, graph.num_nodes * sizeof(u_int64_t)));
 	gpuErrorcheck(cudaMalloc(&d_prefixLabeling, graph.num_nodes * sizeof(unsigned int)));
-	gpuErrorcheck(cudaMalloc(&d_prefixSumDegrees , (graph.num_nodes+1) * sizeof(unsigned int)));
+	gpuErrorcheck(cudaMalloc(&d_prefixSumDegrees , (graph.num_nodes+1) * sizeof(u_int64_t)));
 }
 
 template <class E>
@@ -144,8 +144,8 @@ void SubgraphGenerator<E>::generate(Graph<E> &graph, Subgraph<E> &subgraph)
 	
 	gpuErrorcheck(cudaMemcpy(subgraph.activeNodes, subgraph.d_activeNodes, subgraph.numActiveNodes*sizeof(unsigned int), cudaMemcpyDeviceToHost));
 	
-	thrust::device_ptr<unsigned int> ptr_degrees(d_activeNodesDegree);
-	thrust::device_ptr<unsigned int> ptr_degrees_prefixsum(d_prefixSumDegrees);
+	thrust::device_ptr<u_int64_t> ptr_degrees(d_activeNodesDegree);
+	thrust::device_ptr<u_int64_t> ptr_degrees_prefixsum(d_prefixSumDegrees);
 	
 	thrust::exclusive_scan(ptr_degrees, ptr_degrees + graph.num_nodes, ptr_degrees_prefixsum);
 	
@@ -225,8 +225,8 @@ void SubgraphGenerator<E>::generate(GraphPR<E> &graph, Subgraph<E> &subgraph, fl
 	
 	gpuErrorcheck(cudaMemcpy(subgraph.activeNodes, subgraph.d_activeNodes, subgraph.numActiveNodes*sizeof(unsigned int), cudaMemcpyDeviceToHost));
 	
-	thrust::device_ptr<unsigned int> ptr_degrees(d_activeNodesDegree);
-	thrust::device_ptr<unsigned int> ptr_degrees_prefixsum(d_prefixSumDegrees);
+	thrust::device_ptr<u_int64_t> ptr_degrees(d_activeNodesDegree);
+	thrust::device_ptr<u_int64_t> ptr_degrees_prefixsum(d_prefixSumDegrees);
 	
 	thrust::exclusive_scan(ptr_degrees, ptr_degrees + graph.num_nodes, ptr_degrees_prefixsum);
 	
@@ -284,8 +284,8 @@ void SubgraphGenerator<E>::generate(GraphPR<E> &graph, Subgraph<E> &subgraph, fl
 	
 }
 
-__global__ void prePrefix(unsigned int *activeNodesLabeling, unsigned int *activeNodesDegree, 
-							unsigned int *outDegree, int *numWalker1, unsigned int numNodes)
+__global__ void prePrefix(unsigned int *activeNodesLabeling, u_int64_t *activeNodesDegree, 
+							u_int64_t *outDegree, int *numWalker1, unsigned int numNodes)
 {
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
 	if(id < numNodes){
@@ -323,8 +323,8 @@ void SubgraphGenerator<E>::generate(GraphPR<E> &graph, Subgraph<E> &subgraph, in
 	
 	gpuErrorcheck(cudaMemcpy(subgraph.activeNodes, subgraph.d_activeNodes, subgraph.numActiveNodes*sizeof(unsigned int), cudaMemcpyDeviceToHost));
 	
-	thrust::device_ptr<unsigned int> ptr_degrees(d_activeNodesDegree);
-	thrust::device_ptr<unsigned int> ptr_degrees_prefixsum(d_prefixSumDegrees);
+	thrust::device_ptr<u_int64_t> ptr_degrees(d_activeNodesDegree);
+	thrust::device_ptr<u_int64_t> ptr_degrees_prefixsum(d_prefixSumDegrees);
 	
 	thrust::exclusive_scan(ptr_degrees, ptr_degrees + graph.num_nodes, ptr_degrees_prefixsum);
 	
