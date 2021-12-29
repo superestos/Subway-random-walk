@@ -12,22 +12,11 @@
 #include "../shared/test.cu"
 #include "../shared/stopwatch.h"
 
-const int num_walkers = 1000000;
-
-__global__ void moveWalkers(unsigned int num_nodes, int *numWalker1, int *numWalker2, float *value)
-{
-	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
-	if (id < num_nodes) {
-		numWalker1[id] = numWalker2[id];
-		value[id] += (numWalker2[id] + 0.0) / 10.0;
-		numWalker2[id] = 0;
-	}
-}
-
 int main(int argc, char** argv)
 {	
 	Stopwatch copyTimer;
 	Stopwatch computeTimer;
+	Stopwatch generateTimer;
 
 	cudaFree(0);
 
@@ -57,7 +46,7 @@ int main(int argc, char** argv)
 		graph.value[i] = 0;
 		numWalker1[i] = 0;
 	}
-    numWalker1[arguments.sourceNode] = num_walkers;
+    numWalker1[arguments.sourceNode] = graph.num_nodes * 2;
 
 
 	gpuErrorcheck(cudaMemcpy(graph.d_outDegree, graph.outDegree, graph.num_nodes * sizeof(u_int64_t), cudaMemcpyHostToDevice));
@@ -68,7 +57,9 @@ int main(int argc, char** argv)
 	
 	SubgraphGenerator<OutEdge> subgen(graph);
 	
+	generateTimer.start();
 	subgen.generate(graph, subgraph, d_numWalker1);
+	generateTimer.stop();
 
 	cout << "generate subgraph" << endl;
 
@@ -80,7 +71,7 @@ int main(int argc, char** argv)
 
 	unsigned long totalActiveNodes = 0;
 		
-	for (; gItr < 10; gItr++)
+	while (subgraph.numActiveNodes>0)
 	{
 		
 		partitioner.partition(subgraph, subgraph.numActiveNodes);
@@ -91,14 +82,14 @@ int main(int argc, char** argv)
 		// a super iteration
 		for(int i=0; i<partitioner.numPartitions; i++)
 		{
-			copyTimer.start();
 			cudaDeviceSynchronize();
+			copyTimer.start();
 			gpuErrorcheck(cudaMemcpy(subgraph.d_activeEdgeList, subgraph.activeEdgeList + partitioner.fromEdge[i], (partitioner.partitionEdgeSize[i]) * sizeof(OutEdge), cudaMemcpyHostToDevice));
 			cudaDeviceSynchronize();
 			copyTimer.stop();
 			
 			computeTimer.start();
-			rw_kernel<<< partitioner.partitionNodeSize[i]/512 + 1 , 512 >>>(graph.num_nodes,
+			ppr_kernel<<< partitioner.partitionNodeSize[i]/512 + 1 , 512 >>>(graph.num_nodes,
 												partitioner.partitionNodeSize[i],
 												partitioner.fromNode[i],
 												partitioner.fromEdge[i],
@@ -117,11 +108,11 @@ int main(int argc, char** argv)
 	
 		}
 
-		moveWalkers<<<graph.num_nodes/512 + 1, 512>>>(graph.num_nodes, d_numWalker1, d_numWalker2, graph.d_value);
+		moveWalkers_ppr<<<graph.num_nodes/512 + 1, 512>>>(graph.num_nodes, d_numWalker1, d_numWalker2, graph.d_value, randStates);
 		
-		copyTimer.start();
+		generateTimer.start();
 		subgen.generate(graph, subgraph, d_numWalker1);
-		copyTimer.stop();
+		generateTimer.stop();
 	}	
 	
 	float runtime = timer.Finish();
@@ -130,6 +121,7 @@ int main(int argc, char** argv)
 	cout << "Number of iterations = " << gItr << endl;
 
 	cout << "compute time: " << computeTimer.total() << " ns copy time: " << copyTimer.total() << " ns\n";
+	cout << "generate subgraph time: " << generateTimer.total() << " ns\n";
 
 	cout << "total active nodes: " << totalActiveNodes << "\n";
 	
@@ -137,7 +129,7 @@ int main(int argc, char** argv)
 
 	unsigned long sum = 0;
 	for (unsigned i = 0; i < graph.num_nodes; i++) {
-		sum += std::lround(graph.value[i] * 10);
+		sum += graph.value[i];
 	}
 	cout << "sum: " << sum << endl;
 	

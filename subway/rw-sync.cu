@@ -12,34 +12,13 @@
 #include "../shared/test.cu"
 #include "../shared/stopwatch.h"
 
-/*
-__global__ void moveWalkers(unsigned int * activeNodes, int *numWalker1, int *numWalker2, float *value, unsigned int size, unsigned int from)
-{
-	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
-	unsigned int nID;
-	if(id < size){
-		nID = activeNodes[id+from];
-		numWalker1[nID] = numWalker2[nID];
-		value[nID] += (numWalker2[nID] + 0.0) / 10.0;
-		numWalker2[nID] = 0;
-	}
-}
-*/
 
-__global__ void moveWalkers(unsigned int num_nodes, int *numWalker1, int *numWalker2, float *value)
-{
-	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
-	if (id < num_nodes) {
-		numWalker1[id] = numWalker2[id];
-		value[id] += (numWalker2[id] + 0.0) / 10.0;
-		numWalker2[id] = 0;
-	}
-}
 
 int main(int argc, char** argv)
 {	
 	Stopwatch copyTimer;
 	Stopwatch computeTimer;
+	Stopwatch generateTimer;
 
 	cudaFree(0);
 
@@ -63,13 +42,21 @@ int main(int argc, char** argv)
 	curandState *randStates;
 	cudaMalloc(&randStates, sizeof(curandState) * 512);
 	init_rand<<<1, 512>>>(randStates, 512);
+
+	std::random_device rd;
+	std::mt19937 rng{rd()}; 
+	std::uniform_int_distribution<int> uniform(0, graph.num_nodes - 1);
 	
 	for(unsigned int i=0; i<graph.num_nodes; i++)
 	{
 		graph.value[i] = 0;
-		numWalker1[i] = 1;
+		numWalker1[i] = 0;
 	}
 
+	u_int32_t numWalker = graph.num_nodes * 2;
+	for(u_int32_t i = 0; i < numWalker; i++) {
+		numWalker1[uniform(rng)]++;
+	}
 
 	gpuErrorcheck(cudaMemcpy(graph.d_outDegree, graph.outDegree, graph.num_nodes * sizeof(u_int64_t), cudaMemcpyHostToDevice));
 	gpuErrorcheck(cudaMemcpy(graph.d_value, graph.value, graph.num_nodes * sizeof(float), cudaMemcpyHostToDevice));
@@ -102,8 +89,8 @@ int main(int argc, char** argv)
 		// a super iteration
 		for(int i=0; i<partitioner.numPartitions; i++)
 		{
-			copyTimer.start();
 			cudaDeviceSynchronize();
+			copyTimer.start();
 			gpuErrorcheck(cudaMemcpy(subgraph.d_activeEdgeList, subgraph.activeEdgeList + partitioner.fromEdge[i], (partitioner.partitionEdgeSize[i]) * sizeof(OutEdge), cudaMemcpyHostToDevice));
 			cudaDeviceSynchronize();
 			copyTimer.stop();
@@ -130,14 +117,14 @@ int main(int argc, char** argv)
 	
 		}
 
-		computeTimer.stop();
-		moveWalkers<<<graph.num_nodes/512 + 1, 512>>>(graph.num_nodes, d_numWalker1, d_numWalker2, graph.d_value);
-		cudaDeviceSynchronize();
-		computeTimer.stop();
+		//computeTimer.stop();
+		moveWalkers_pr<<<graph.num_nodes/512 + 1, 512>>>(graph.num_nodes, d_numWalker1, d_numWalker2, graph.d_value);
+		//cudaDeviceSynchronize();
+		//computeTimer.stop();
 		
-		copyTimer.start();
+		generateTimer.start();
 		subgen.generate(graph, subgraph, d_numWalker1);
-		copyTimer.stop();
+		generateTimer.stop();
 	}	
 	
 	float runtime = timer.Finish();
@@ -146,6 +133,7 @@ int main(int argc, char** argv)
 	cout << "Number of iterations = " << gItr << endl;
 
 	cout << "compute time: " << computeTimer.total() << " ns copy time: " << copyTimer.total() << " ns\n";
+	cout << "generate subgraph time: " << generateTimer.total() << " ns\n";
 
 	cout << "total active nodes: " << totalActiveNodes << "\n";
 	
@@ -153,7 +141,7 @@ int main(int argc, char** argv)
 
 	unsigned long sum = 0;
 	for (unsigned i = 0; i < graph.num_nodes; i++) {
-		sum += std::lround(graph.value[i] * 10);
+		sum += graph.value[i];
 	}
 	cout << "sum: " << sum << endl;
 	
