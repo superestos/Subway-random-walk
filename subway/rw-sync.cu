@@ -66,7 +66,9 @@ int main(int argc, char** argv)
 	
 	SubgraphGenerator<OutEdge> subgen(graph);
 	
+	generateTimer.start();
 	subgen.generate(graph, subgraph, d_numWalker1);
+	generateTimer.stop();
 
 	cout << "generate subgraph" << endl;
 

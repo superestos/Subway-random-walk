@@ -566,7 +566,25 @@ __global__ void ppr_kernel(	unsigned int numAllNodes,
 {
 	unsigned int tId = blockDim.x * blockIdx.x + threadIdx.x;
 
-	if(tId < numNodes)
+	if(numNodes == 1) 
+	{
+		unsigned int id = activeNodes[from];
+		u_int64_t degree = outDegree[id];
+		int thisNumWalker = numWalker1[id] / blockDim.x;
+		if (threadIdx.x < numWalker1[id] % blockDim.x) {
+			thisNumWalker += 1;
+		}
+
+		u_int64_t thisfrom = activeNodesPointer[from]-numPartitionedEdges;
+
+		for (int i = 0; i < thisNumWalker; i++) {
+			unsigned int end;
+			end = edgeList[thisfrom + uniform_discrete_distribution(randStates[threadIdx.x], degree)].end;
+
+			atomicAdd(&numWalker2[end], 1);
+		}
+	}
+	else if(tId < numNodes)
 	{
 		unsigned int id = activeNodes[from + tId];
 		u_int64_t degree = outDegree[id];

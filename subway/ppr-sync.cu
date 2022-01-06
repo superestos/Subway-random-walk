@@ -31,6 +31,17 @@ int main(int argc, char** argv)
 	float readtime = timer.Finish();
 	cout << "Graph Reading finished in " << readtime/1000 << " (s).\n";
 
+	uint source_vertex = 0;
+	uint max_degree = 0;
+	for (int i=0; i<graph.num_nodes; i++){
+		if (graph.outDegree[i]>max_degree){
+			max_degree = graph.outDegree[i];
+			source_vertex = i;
+		}
+	}
+
+	cout<<"Source vertex: "<<source_vertex<<endl;
+
 	int *numWalker1 = new int[graph.num_nodes];
 	int *d_numWalker1, *d_numWalker2;
 
@@ -46,7 +57,8 @@ int main(int argc, char** argv)
 		graph.value[i] = 0;
 		numWalker1[i] = 0;
 	}
-    numWalker1[arguments.sourceNode] = graph.num_nodes * 2;
+    //numWalker1[arguments.sourceNode] = graph.num_nodes * 2;
+	numWalker1[source_vertex] = graph.num_nodes * 2;
 
 
 	gpuErrorcheck(cudaMemcpy(graph.d_outDegree, graph.outDegree, graph.num_nodes * sizeof(u_int64_t), cudaMemcpyHostToDevice));
