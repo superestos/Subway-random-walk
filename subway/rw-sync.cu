@@ -79,6 +79,10 @@ int main(int argc, char** argv)
 	uint gItr = 0;
 
 	unsigned long totalActiveNodes = 0;
+
+	u_int32_t *visit_count;
+	cudaMalloc(&visit_count, sizeof(u_int32_t) * graph.num_nodes);
+	u_int32_t *h_visit_count = new u_int32_t[graph.num_nodes];
 		
 	for (; gItr < 10; gItr++)
 	{
@@ -129,7 +133,7 @@ int main(int argc, char** argv)
 		}
 
 		//computeTimer.stop();
-		moveWalkers_pr<<<graph.num_nodes/512 + 1, 512>>>(graph.num_nodes, d_numWalker1, d_numWalker2, graph.d_value);
+		moveWalkers_pr<<<graph.num_nodes/512 + 1, 512>>>(graph.num_nodes, d_numWalker1, d_numWalker2, visit_count);
 		//cudaDeviceSynchronize();
 		//computeTimer.stop();
 		
@@ -148,11 +152,11 @@ int main(int argc, char** argv)
 
 	cout << "total active nodes: " << totalActiveNodes << "\n";
 	
-	gpuErrorcheck(cudaMemcpy(graph.value, graph.d_value, graph.num_nodes*sizeof(float), cudaMemcpyDeviceToHost));
+	gpuErrorcheck(cudaMemcpy(h_visit_count, visit_count, graph.num_nodes*sizeof(u_int32_t), cudaMemcpyDeviceToHost));
 
 	unsigned long sum = 0;
 	for (unsigned i = 0; i < graph.num_nodes; i++) {
-		sum += graph.value[i];
+		sum += h_visit_count[i];
 	}
 	cout << "sum: " << sum << endl;
 	

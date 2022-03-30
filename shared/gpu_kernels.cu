@@ -670,7 +670,7 @@ __global__ void moveUpLabels(unsigned int * activeNodes, bool *label1, bool *lab
 	}
 }
 
-__global__ void moveWalkers_pr(unsigned int num_nodes, int *numWalker1, int *numWalker2, float *value)
+__global__ void moveWalkers_pr(unsigned int num_nodes, int *numWalker1, int *numWalker2, u_int32_t *value)
 {
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
 	if (id < num_nodes) {
