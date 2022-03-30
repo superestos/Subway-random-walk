@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 		
 		partitioner.partition(subgraph, subgraph.numActiveNodes);
 
-		cout << "num active nodes: " << subgraph.numActiveNodes << "\n";
+		//cout << "num active nodes: " << subgraph.numActiveNodes << "\n";
 		totalActiveNodes += subgraph.numActiveNodes;
 
 		// a super iteration

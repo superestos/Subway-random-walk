@@ -550,6 +550,45 @@ __global__ void rw_kernel(	unsigned int numAllNodes,
 	}
 }
 
+
+__global__ void dw_kernel(	unsigned int numAllNodes,
+									unsigned int numNodes,
+									unsigned int from,
+									u_int64_t numPartitionedEdges,
+									unsigned int *activeNodes,
+									u_int64_t *activeNodesPointer,
+									OutEdge *edgeList,
+									u_int64_t *outDegree,
+									float *value,
+									int *numWalker1,
+									int *numWalker2,
+									curandState *randStates
+									)
+{
+	unsigned int tId = blockDim.x * blockIdx.x + threadIdx.x;
+
+	if(tId < numNodes)
+	{
+		unsigned int id = activeNodes[from + tId];
+		u_int64_t degree = outDegree[id];
+		int thisNumWalker = numWalker1[id];
+
+		u_int64_t thisfrom = activeNodesPointer[from+tId]-numPartitionedEdges;
+
+		for (int i = 0; i < thisNumWalker; i++) {
+			unsigned int end;
+			// if (curand_uniform(&randStates[threadIdx.x]) < 0.15) {
+			// 	end = uniform_discrete_distribution(randStates[threadIdx.x], numAllNodes);
+			// }
+			// else {
+				end = edgeList[thisfrom + uniform_discrete_distribution(randStates[threadIdx.x], degree)].end;
+			// }
+
+			atomicAdd(&numWalker2[end], 1);
+		}
+	}
+}
+
 __global__ void ppr_kernel(	unsigned int numAllNodes,
 							unsigned int numNodes,
 							unsigned int from,
@@ -640,6 +679,7 @@ __global__ void moveWalkers_pr(unsigned int num_nodes, int *numWalker1, int *num
 		numWalker2[id] = 0;
 	}
 }
+
 
 __global__ void moveWalkers_ppr(unsigned int num_nodes, int *numWalker1, int *numWalker2, float *value, curandState *randStates)
 {

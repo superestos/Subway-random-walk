@@ -86,6 +86,15 @@ int main(int argc, char** argv)
 		partitioner.partition(subgraph, subgraph.numActiveNodes);
 
 		cout << "num active nodes: " << subgraph.numActiveNodes << "\n";
+
+		u_int64_t activeEdges = 0;
+		for(int i=0; i<partitioner.numPartitions; i++)
+		{
+			activeEdges += partitioner.partitionEdgeSize[i];
+		}
+
+		cout << "num active edges: " << activeEdges << "\n";
+		
 		totalActiveNodes += subgraph.numActiveNodes;
 
 		// a super iteration
