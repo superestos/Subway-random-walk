@@ -141,20 +141,6 @@ __global__ void rw_kernel(	unsigned int numAllNodes,
 							curandState *randStates
 							);
 
-__global__ void dw_kernel(	unsigned int numAllNodes,
-							unsigned int numNodes,
-							unsigned int from,
-							u_int64_t numPartitionedEdges,
-							unsigned int *activeNodes,
-							u_int64_t *activeNodesPointer,
-							OutEdge *edgeList,
-							u_int64_t *outDegree,
-							float *value,
-							int *numWalker1,
-							int *numWalker2,
-							curandState *randStates
-							);
-
 __global__ void ppr_kernel(	unsigned int numAllNodes,
 							unsigned int numNodes,
 							unsigned int from,

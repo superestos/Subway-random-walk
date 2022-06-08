@@ -22,10 +22,7 @@ sswp-sync.o: sswp-sync.cu
 	$(NC) -c sswp-sync.cu $(CFLAGS) $(NFLAGS)
 	
 pr-sync.o: pr-sync.cu
-	$(NC) -c pr-sync.cu $(CFLAGS) $(NFLAGS)			
-
-#dw-sync.o: dw-sync.cu
-#	$(NC) -c dw-sync.cu $(CFLAGS) $(NFLAGS)	
+	$(NC) -c pr-sync.cu $(CFLAGS) $(NFLAGS)
 
 rw-sync.o: rw-sync.cu
 	$(NC) -c rw-sync.cu $(CFLAGS) $(NFLAGS)	

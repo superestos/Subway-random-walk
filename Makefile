@@ -11,7 +11,7 @@ TOOLS=tools
 
 DEP=$(SHARED)/timer.o $(SHARED)/argument_parsing.o $(SHARED)/graph.o $(SHARED)/subgraph.o $(SHARED)/partitioner.o $(SHARED)/subgraph_generator.o $(SHARED)/gpu_kernels.o $(SHARED)/subway_utilities.o $(SHARED)/test.o  
 
-all: make1 make2 make3 bfs-sync cc-sync sssp-sync sswp-sync pr-sync ppr-sync rw-sync dw-sync bfs-async cc-async sssp-async sswp-async pr-async
+all: make1 make2 make3 bfs-sync cc-sync sssp-sync sswp-sync pr-sync ppr-sync rw-sync bfs-async cc-async sssp-async sswp-async pr-async
 
 make1:
 	make -C $(SHARED)
@@ -21,7 +21,6 @@ make2:
 
 make3:
 	make -C $(TOOLS)
-
 
 bfs-sync: $(SUBWAY)/bfs-sync.o $(DEP)
 	$(NC) $(SUBWAY)/bfs-sync.o $(DEP) -o bfs-sync $(CFLAGS) $(NFLAGS)
@@ -39,10 +38,7 @@ pr-sync: $(SUBWAY)/pr-sync.o $(DEP)
 	$(NC) $(SUBWAY)/pr-sync.o $(DEP) -o pr-sync $(CFLAGS) $(NFLAGS)	
 	
 rw-sync: $(SUBWAY)/rw-sync.o $(DEP)
-	$(NC) $(SUBWAY)/rw-sync.o $(DEP) -o rw-sync $(CFLAGS) $(NFLAGS)	
-
-dw-sync: $(SUBWAY)/dw-sync.o $(DEP)
-	$(NC) $(SUBWAY)/dw-sync.o $(DEP) -o dw-sync $(CFLAGS) $(NFLAGS)	
+	$(NC) $(SUBWAY)/rw-sync.o $(DEP) -o rw-sync $(CFLAGS) $(NFLAGS)
 
 ppr-sync: $(SUBWAY)/ppr-sync.o $(DEP)
 	$(NC) $(SUBWAY)/ppr-sync.o $(DEP) -o ppr-sync $(CFLAGS) $(NFLAGS)	
@@ -66,4 +62,4 @@ clean:
 	make -C $(SHARED) clean
 	make -C $(SUBWAY) clean
 	make -C $(TOOLS) clean
-	rm -f bfs-sync cc-sync sssp-sync sswp-sync pr-sync ppr-sync rw-sync bfs-async cc-async sssp-async sswp-async pr-async dw-sync
+	rm -f bfs-sync cc-sync sssp-sync sswp-sync pr-sync ppr-sync rw-sync bfs-async cc-async sssp-async sswp-async pr-async

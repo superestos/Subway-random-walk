@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 	cudaMalloc(&visit_count, sizeof(u_int32_t) * graph.num_nodes);
 	u_int32_t *h_visit_count = new u_int32_t[graph.num_nodes];
 		
-	for (; gItr < 10; gItr++)
+	for (; gItr < 80; gItr++)
 	{
 		
 		partitioner.partition(subgraph, subgraph.numActiveNodes);
